@@ -1,1 +1,67 @@
+# Build outputs
+bin/
+obj/
+out/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Entity Framework migrations snapshot (keep migrations, ignore snapshots if desired)
+# Uncomment the line below if you don't want to commit migration snapshots:
+# **/Migrations/*ModelSnapshot.cs
+
+# Secrets / environment
+appsettings.Development.json
+appsettings.Local.json
+.env
+*.pfx
+*.p12
+
+# Test results
+TestResults/
+coverage/
+*.trx
+*.coverage
+*.coveragexml
+
+# Publish output
+publish/
+**/Properties/PublishProfiles/
+
+# Docker
+docker-compose.override.yml
+
+# Misc
 promp.txt
