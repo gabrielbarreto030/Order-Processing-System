@@ -1,5 +1,7 @@
 using PortfolioFila.Application.Extensions;
 using PortfolioFila.Infrastructure.Extensions;
+using PortfolioFila.Infrastructure.Messaging;
+using RabbitMQ.Client;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,12 +34,17 @@ builder.Services.AddSwaggerGen(c =>
         c.IncludeXmlComments(xmlPath);
 });
 
+var rabbitSettings = builder.Configuration.GetSection(RabbitMQSettings.SectionName);
 builder.Services
     .AddHealthChecks()
     .AddSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")!,
         name: "sqlserver",
-        tags: ["db", "sql"]);
+        tags: ["db", "sql"])
+    .AddRabbitMQ(
+        rabbitConnectionString: $"amqp://{rabbitSettings["Username"]}:{rabbitSettings["Password"]}@{rabbitSettings["Host"]}:{rabbitSettings["Port"]}{rabbitSettings["VirtualHost"]}",
+        name: "rabbitmq",
+        tags: ["mq", "rabbit"]);
 
 // ─── App ───────────────────────────────────────────────────────────────────
 var app = builder.Build();
@@ -53,6 +60,21 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapControllers();
 app.MapHealthChecks("/health");
+
+// Ensure RabbitMQ queues exist on startup
+using (var scope = app.Services.CreateScope())
+{
+    var queueSetup = scope.ServiceProvider.GetRequiredService<RabbitMQQueueSetup>();
+    try
+    {
+        queueSetup.EnsureQueuesExist();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning(ex, "Could not setup RabbitMQ queues on startup. Make sure RabbitMQ is running.");
+    }
+}
 
 app.Run();
 
